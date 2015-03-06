@@ -1,10 +1,9 @@
+#Python Libraries
 import os
 
+#Python Packages
 import pandas as pd
 from numpy import sum
-
-from helpers import *
-
 
 def load_mapped_data(idx_dir, sample_map):
     '''
@@ -141,7 +140,7 @@ def get_low_mid_high_genes(control_tpm, cutoffs=(0.3333333, 0.6666667)):
     high_expressed = control_expressed[high_cutoff]
     return low_expressed, mid_expressed, high_expressed
 
-def calculate_relative_expression(tpm_df, low, mid, high):
+def label_expression(tpm_df, low, mid, high):
     def label_type(gene_id):
         if gene_id in low:
             return "Low"
@@ -152,12 +151,16 @@ def calculate_relative_expression(tpm_df, low, mid, high):
         else:
             return "Novel"
 
+    tpm_df['Type'] = tpm_df.index.map(label_type)
+    return tpm_df
+
+def calculate_relative_expression(tpm_df, low, mid, high):
+
+    tpm_df = label_expression(tpm_df, low, mid, high)
     value_counts = {}
     for sample_name in tpm_df.columns:
         sample_df = tpm_df[tpm_df[sample_name] > 0]
-        sample_df['Type'] = sample_df.index.map(label_type)
         value_counts[sample_name] = sample_df['Type'].value_counts()
-
     return pd.DataFrame(value_counts).T.fillna(0)
 
 def load_gene_body_coverage(coverage_file, sample_map):
