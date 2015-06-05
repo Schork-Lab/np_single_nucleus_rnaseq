@@ -96,8 +96,7 @@ def load_tpms(rsem_dir, sample_map=None):
 
 def filter_df(tpm_df,
               genes_only=True,
-              expressed_in_multiple=False,
-              neuronal=True, non_neuronal=True, total=True):
+              expressed_in_multiple=False,):
     '''
     A helper function to filter the TPM dataframe based on different classifications
 
@@ -107,12 +106,6 @@ def filter_df(tpm_df,
     :type genes_only: boolean
     :param expressed_in_multiple: Filter out all genes only expressed in one nuclei 
     :type expressed_in_multiple: boolean
-    :param neuronal: Keep neuronal samples
-    :type neuronal: boolean
-    :param non_neuronal: Keep non-neuronal samples
-    :type non_neuronal: boolean
-    :param total: Keep pooled/Total RNA samples
-    :type total: boolean
     '''
 
     if genes_only:
@@ -122,18 +115,7 @@ def filter_df(tpm_df,
     if expressed_in_multiple:
         tpm_df = tpm_df[sum(tpm_df > 0, axis=1) > 1]
 
-    columns = []
-    if neuronal:
-        columns += [column for column in tpm_df.columns
-                    if column.find('Neuronal nucleus') != -1]
-    if non_neuronal:
-        columns += [column for column in tpm_df.columns
-                    if column.find('Non-neuronal nucleus') != -1]
-    if total:
-        columns += [column for column in tpm_df.columns
-                    if column.find('Total RNA') != -1]
-
-    return tpm_df[columns].sort(axis=1)
+    return tpm_df.sort(axis=1)
 
 def get_low_mid_high_genes(control_tpm, cutoffs=(0.3333333, 0.6666667)):
     '''
