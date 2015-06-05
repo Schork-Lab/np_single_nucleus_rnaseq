@@ -1,42 +1,13 @@
 #Python Libraries
 import os
+import re
 
 #Python Packages
 import pandas as pd
-from numpy import sum
-
-def subset_gtf_by_genes(new_gtf, original_gtf, genes):
-    '''
-    Reads in a GTF file and writes a new gtf file for a passed list of genes
-
-    :param new_gtf: path to the new gtf file
-    :type new_gtf: str
-    :param original_gtf: path to the original gtf
-    :type original_gtf: str
-    :param genes: list of genes to subset
-    :type genes: list
-    '''
-
-    def extract_field(fieldname, information):
-        '''
-        Helper function to extract field from a gtf file
-        '''
-        try:
-            return re.search(fieldname+' "([\w.-]+)"', information).group(1)
-        except:
-            return "None"
-
-    with open(original_gtf) as IN:
-        with open(new_gtf, 'w') as OUT:
-            for line in IN:
-                if line.startswith('#'):
-                    OUT.write(line)
-                else:
-                    gene_id = data.extract_field("gene_id", line)
-                    if gene_id in genes:
-                        OUT.write(line)
-
-
+from numpy import sum, log10
+import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib.gridspec as gridspec
 
 
 def load_mapped_data(idx_dir, sample_map=None):
@@ -268,6 +239,37 @@ def load_gene_body_coverage(coverage_file, sample_map):
     normalized_df = (coverage_df - coverage_df.min())/coverage_range
     return normalized_df, coverage_df
 
+def subset_gtf_by_genes(new_gtf, original_gtf, genes):
+    '''
+    Reads in a GTF file and writes a new gtf file for a passed list of genes
+
+    :param new_gtf: path to the new gtf file
+    :type new_gtf: str
+    :param original_gtf: path to the original gtf
+    :type original_gtf: str
+    :param genes: list of genes to subset
+    :type genes: list
+    '''
+
+    def extract_field(fieldname, information):
+        '''
+        Helper function to extract field from a gtf file
+        '''
+        try:
+            return re.search(fieldname+' "([\w.-]+)"', information).group(1)
+        except:
+            return "None"
+
+    with open(original_gtf) as IN:
+        with open(new_gtf, 'w') as OUT:
+            for line in IN:
+                if line.startswith('#'):
+                    OUT.write(line)
+                else:
+                    gene_id = extract_field("gene_id", line)
+                    if gene_id in genes:
+                        OUT.write(line)
+
 def load_bedtools_coverage(filename, min_reads=1, min_length=100):
     """
     Loads in bedtool coverage files generated using coverageBed. Filters
@@ -289,3 +291,38 @@ def load_bedtools_coverage(filename, min_reads=1, min_length=100):
     coverage_df = coverage_df[(coverage_df.Reads >= min_reads) &
                               (coverage_df.Length >= min_length)]
     return coverage_df
+
+def plot_bedtools_coverage(intronic_df, exonic_df, figsize=(8,8)):
+    '''
+    Creates a plot showing the relative intronic and exonic coverage as 
+    calculated by bedtools coverage
+    
+    :param intronic_df: a bedtools coverage df for introns created by load_bedtools_coverage
+    :type intronic_df: pandas.DataFrame
+    :param exonic_df: a bedtools coverage df for exons created by load_bedtools_coverage
+    :type exonic_df: pandas.DataFrame
+    :returns: a figure detailing differences between intronic and exonic regions
+
+    '''
+    fig = plt.figure(figsize=figsize)
+    gs = gridspec.GridSpec(2, 1, height_ratios=[2,1])
+    ax = fig.add_subplot(gs[0])
+    ax.scatter(exonic_df['Fractiongt0'], 
+               exonic_df['Length'].map(log10),
+               label='Exons', color='red', alpha=0.4)
+    ax.scatter(intronic_df['Fractiongt0'], 
+               intronic_df['Length'].map(log10), 
+               alpha=1, label='Introns')
+    ax.set_ylim([2, 6])
+    ax.set_xlim([0, 1])
+    ax.set_ylabel('Length of Feature (log10)')
+    ax.set_title('Coverage Consistency Across Features')
+    ax.legend()
+    ax = fig.add_subplot(gs[1])
+    intronic_df['Fractiongt0'].hist(ax=ax,)
+    exonic_df['Fractiongt0'].hist(color='red', alpha=0.6, ax=ax)
+    ax.set_xlabel('Fraction of Feature Covered with >0 Reads')
+    ax.set_ylabel('Number of Features')
+    fig.tight_layout()
+    sns.despine()
+    return fig
