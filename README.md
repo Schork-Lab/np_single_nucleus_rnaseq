@@ -13,4 +13,5 @@ http://nbviewer.ipython.org/github/Schork-Lab/np_single_nucleus_rnaseq/blob/mast
 ## Python Dependencies
 - [pandas](http://pandas.pydata.org/): 0.15.0 or higher
 - [matplotlib](http://matplotlib.org/): 1.3.1 or higher
+- [seaborn](http://stanford.edu/~mwaskom/software/seaborn/): 0.3 or higher
 
