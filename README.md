@@ -6,6 +6,7 @@ http://nbviewer.ipython.org/github/Schork-Lab/np_single_nucleus_rnaseq/blob/mast
 
 # Required Tools
 - [samtools](http://www.htslib.org/)
+- [bedtools](http://bedtools.readthedocs.org/en/latest/content/installation.html)
 - [rseqc](http://rseqc.sourceforge.net/)
 - [gtf2bed.pl](https://code.google.com/p/ea-utils/source/browse/trunk/clipper/gtf2bed)
 - [ipython](http://ipython.org/)
